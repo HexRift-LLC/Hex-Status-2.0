@@ -1,16 +1,11 @@
 {
-  "name": "Hex-Status",
+  "name": "Hex-Status-Server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend for Hex-Status",
+  "main": "server.js",
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "Hexarion",
-  "license": "ISC",
   "dependencies": {
     "axios": "^1.7.9",
     "chartjs-node-canvas": "^4.1.6",
@@ -19,7 +14,9 @@
     "discord.js": "^14.18.0",
     "express": "^4.21.2",
     "find-process": "^1.4.10",
+    "Hex-Status": "file:..",
     "js-yaml": "^4.1.0",
+    "module-alias": "^2.2.3",
     "mongoose": "^8.10.1",
     "ping": "^0.4.4",
     "react-app-rewired": "^2.2.1",

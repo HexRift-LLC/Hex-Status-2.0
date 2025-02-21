@@ -3,9 +3,15 @@ const cors = require("cors");
 const yaml = require("js-yaml");
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io"); // Import WebSocket server
+const { createServer } = require("http"); // Use HTTP server for WebSockets
 const discordBot = require("./discord/bot");
-const { spawn } = require("child_process");
 const findProcess = require("find-process");
+const {
+  updateServicesState,
+  getServicesState,
+} = require("../server/shared/services");
 
 async function startServer() {
   try {
@@ -15,44 +21,51 @@ async function startServer() {
     const app = express();
     app.use(cors());
     app.use(express.json());
-    app.use(express.static(path.join(__dirname, "../client/build")));
 
-    const { monitorServices, getServices } = require("./services/monitor");
-
-    // Run the monitor every 30 seconds
-    setInterval(monitorServices, 30000);
-
-    // API routes should come first
-    app.get("/api/services", (req, res) => {
-      res.json(getServices());
+    const server = http.createServer(app);
+    const io = new Server(server, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+      },
     });
 
-    app.get("/api/config", (req, res) => {
-      res.json({
-        baseUrl: config.server.baseUrl,
+    const { monitorServices, getServices } = require("./services/monitor");
+    // Monitor services every 30 seconds
+    setInterval(monitorServices, 30000);
+    monitorServices().then(() => {
+      console.log("[SERVER] Initial services state updated");
+    });
+
+    io.on("connection", (socket) => {
+      // Send services immediately when a client connects
+      const services = getServices();
+      socket.emit("servicesUpdate", services);
+
+      // Send updates every 30 seconds
+      const updateInterval = setInterval(() => {
+        const updatedServices = getServices();
+        socket.emit("servicesUpdate", updatedServices);
+      }, 30000);
+
+      socket.on("disconnect", () => {
+        clearInterval(updateInterval);
       });
     });
 
-    // Serve static files after API routes
-    app.use(express.static(path.join(__dirname, "../client/build")));
-
-    // Handle React routing, return all requests to React app
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "../client/build", "index.html"));
-    });
-
-    app.listen(config.server.port, config.server.host, () => {
+    // Start the server
+    server.listen(config.server.port, config.server.host, () => {
       console.log(
         `[SERVER] Running on ${config.server.host}:${config.server.port}`
       );
     });
 
-    // Login to Discord bot after the server starts
+    // Login to Discord bot
     discordBot.login(config.discord.token);
     console.log("[DISCORD] Bot login successful");
   } catch (error) {
     console.error("[SERVER] Error starting server:", error);
-    process.exit(1); // Exit with failure
+    process.exit(1);
   }
 }
 
@@ -73,38 +86,41 @@ async function startApplication() {
     // Start the backend server
     await startServer();
 
-    // Start the client in production mode
     console.log("[CLIENT] Building client for production...");
     const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
-    const buildClient = spawn(npmCmd, ["run", "build"], {
-      cwd: path.join(__dirname, "../client"),
-      stdio: "inherit",
-      shell: true,
-    });
+    const buildClient = require("child_process").spawn(
+      npmCmd,
+      ["run", "build"],
+      {
+        cwd: path.join(__dirname, "../client"),
+        stdio: "inherit",
+        shell: true,
+      }
+    );
 
     buildClient.on("close", (code) => {
       if (code === 0) {
         console.log("[CLIENT] Build successful. Starting production server...");
-
-        // Serve the built client
-        spawn(npmCmd, ["install", "-g", "serve"], {
-          stdio: "inherit",
-          shell: true,
-        }).on("close", () => {
-          spawn("serve", ["-s", "build", "-l", "3000"], {
-            cwd: path.join(__dirname, "../client"),
+        require("child_process")
+          .spawn(npmCmd, ["install", "-g", "serve"], {
             stdio: "inherit",
             shell: true,
+          })
+          .on("close", () => {
+            require("child_process").spawn(
+              "serve",
+              ["-s", "build", "-l", "3000"],
+              {
+                cwd: path.join(__dirname, "../client"),
+                stdio: "inherit",
+                shell: true,
+              }
+            );
+            console.log("[CLIENT] Production client is now running.");
           });
-          console.log("[CLIENT] Production client is now running.");
-        });
       } else {
         console.error(`[CLIENT] Build failed with exit code ${code}`);
       }
-    });
-
-    buildClient.on("error", (err) => {
-      console.error(`[CLIENT] Build process failed: ${err.message}`);
     });
   } catch (error) {
     console.error("[APPLICATION] Fatal error:", error);

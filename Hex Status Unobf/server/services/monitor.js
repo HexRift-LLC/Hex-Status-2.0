@@ -25,19 +25,24 @@ const checkService = async (service) => {
   }
 };
 
+const { updateServicesState } = require('../shared/services');
+
 const monitorServices = async () => {
   services = await Promise.all(services.map(async (service) => {
     const result = await checkService(service);
-    return {
+    const updatedService = {
       ...service,
       status: result.status,
       responseTime: result.responseTime,
       lastCheck: new Date()
     };
+    return updatedService;
   }));
+  
+  // Make sure we're updating the shared state
+  updateServicesState(services);
   return services;
 };
-
 const getServices = () => services;
 
 module.exports = { monitorServices, getServices };
