@@ -22,18 +22,9 @@ async function startServer() {
         // Run the monitor every 30 seconds
         setInterval(monitorServices, 30000);
 
-        app.get('/api/services', async (req, res) => {
-            try {
-                // Set proper JSON content type header
-                res.setHeader('Content-Type', 'application/json');
-                const services = await getServices();
-                res.json(services);
-            } catch (error) {
-                console.error('[API] Error fetching services:', error);
-                res.status(500).json({ error: 'Internal Server Error' });
-            }
+        app.get('/api/services', (req, res) => {
+            res.json(getServices());
         });
-        
 
         app.listen(config.server.port, config.server.host, () => {
             console.log(`[SERVER] Running on ${config.server.host}:${config.server.port}`);

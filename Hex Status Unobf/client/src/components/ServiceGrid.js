@@ -4,22 +4,21 @@ import ServiceCard from './ServiceCard';
 
 function ServiceGrid() {
   const [services, setServices] = useState([]);
-
+  const [baseUrl, setBaseUrl] = useState('');
+  useEffect(() => {
+    const getConfig = async () => {
+      const response = await fetch(`${baseUrl}/api/config`);
+      const config = await response.json();
+      setBaseUrl(config.baseUrl);
+    };
+    getConfig();
+  }, []);
+  
   useEffect(() => {
     const getServices = async () => {
       try {
-        const response = await fetch('/api/services');
-  
-        console.log("[DEBUG] Response Headers:", response.headers.get("content-type"));
-  
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-  
-        const text = await response.text();
-        console.log("[DEBUG] Raw Response:", text);
-  
-        const data = JSON.parse(text);
+        const response = await fetch(`${baseUrl}/api/services`);
+        const data = await response.json();
         setServices(data || []);
       } catch (error) {
         console.error('Error:', error);
@@ -28,10 +27,9 @@ function ServiceGrid() {
     };
   
     getServices();
-    const interval = setInterval(getServices, 30000);
+    const interval = setInterval(getServices, 5000);
     return () => clearInterval(interval);
-  }, []);
-
+  }, [baseUrl]);
 
   return (
     <Grid container spacing={3}>
