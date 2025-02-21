@@ -1,7 +1,6 @@
 server:
   port: 3001
   host: 'localhost'
-  env: 'development'
   baseUrl: 'http://localhost:3001'
   
 sendgrid:

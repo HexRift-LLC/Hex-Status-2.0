@@ -8,15 +8,30 @@ function ServiceGrid() {
   useEffect(() => {
     const getServices = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/services');
-        const data = await response.json();
-        setServices(data || []);
+          const response = await fetch('/api/services', {
+              headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+              }
+          });
+  
+          if (!response.ok) {
+              throw new Error(`Failed to fetch services: ${response.status}`);
+          }
+  
+          const data = await response.json();
+          if (!Array.isArray(data)) {
+              throw new Error('Invalid data format received');
+          }
+  
+          setServices(data);
       } catch (error) {
-        console.error('Error:', error);
-        setServices([]);
+          console.error('[ServiceGrid] Data fetch failed:', error.message);
+          // Keep previous services data instead of clearing it
+          // This provides better UX during temporary API issues
       }
-    };
-
+  };
+  
     getServices();
     const interval = setInterval(getServices, 30000);
     return () => clearInterval(interval);
