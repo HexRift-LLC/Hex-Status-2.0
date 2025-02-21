@@ -78,7 +78,7 @@ ui:
     duration: 300
 
 discord:
-  token: 'MTMyNzE0NzM3MjA4MTQ0NzAyNA.G88bwQ.4_cq3mRkCOp4C7vQ1SkMI1fjHGrumn3Fgb-764'
+  token: ''
   clientId: '1327147372081447024'
   guildId: '1323896546538033233'
   settings:
