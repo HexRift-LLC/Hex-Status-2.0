@@ -44,7 +44,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
             alignItems: 'center', 
             gap: 2,
             p: 2,
-            backgroundColor: 'rgba(0, 255, 0, 0.05)',
+            backgroundColor: 'rgba(255, 0, 0, 0.05)',
             borderRadius: 2
           }}>
             <CheckCircleIcon sx={{ color: '#00ff00', fontSize: 40 }} />

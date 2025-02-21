@@ -39,38 +39,8 @@ function Navbar() {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Hex Status 2.0
+            Hex Status
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button 
-              color="inherit" 
-              component={Link} 
-              to="/" 
-              startIcon={<DashboardIcon />}
-              sx={{ 
-                borderRadius: 2,
-                ...(location.pathname === '/' && {
-                  background: 'rgba(0, 255, 0, 0.1)'
-                })
-              }}
-            >
-              Dashboard
-            </Button>
-            <Button 
-              color="inherit" 
-              component={Link} 
-              to="/settings" 
-              startIcon={<SettingsIcon />}
-              sx={{ 
-                borderRadius: 2,
-                ...(location.pathname === '/settings' && {
-                  background: 'rgba(0, 255, 0, 0.1)'
-                })
-              }}
-            >
-              Settings
-            </Button>
-          </Box>
         </Toolbar>
       </Container>
     </AppBar>

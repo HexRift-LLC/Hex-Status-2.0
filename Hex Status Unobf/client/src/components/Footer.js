@@ -28,7 +28,7 @@ function Footer() {
         <Grid container spacing={4}>
           <Grid item xs={12}>
             <Typography variant="body2" color="text.secondary" align="center">
-              © {currentYear} {config.footer.copyright}
+              © 2023 - {currentYear} {config.footer.copyright}
             </Typography>
             <Stack 
               direction="row" 

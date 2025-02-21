@@ -54,7 +54,7 @@ async function startServer() {
     });
 
     // Start the server
-    server.listen(config.server.port, config.server.host, () => {
+    server.listen(config.server.port, "0.0.0.0", () => {
       console.log(
         `[SERVER] Running on ${config.server.host}:${config.server.port}`
       );

@@ -3,8 +3,9 @@ import { Grid } from '@mui/material';
 import ServiceCard from './ServiceCard';
 import { io } from 'socket.io-client';
 
-const socket = io('ws://localhost:3001', {
-  transports: ['websocket'], // Ensure WebSocket connection
+const socket = io({
+  transports: ["websocket"], // Ensure WebSocket connection
+  path: "/socket.io", // Adjust if needed
 });
 
 function ServiceGrid() {

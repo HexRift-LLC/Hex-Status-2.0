@@ -15,18 +15,21 @@ sendgrid:
     batchSize: 1000
 
 services:
-  - name: 'API Server'
-    url: 'https://api.hexarion.net'
   - name: 'Website'
     url: 'https://hexarion.net'
-  - name: 'Database'
-    url: 'https://auth.hexarion.net'
-
+  - name: 'Hex Forum'
+    url: 'https://forum.hexarion.net'
+  - name: 'Hex Track'
+    url: 'https://track.hexarion.net' 
+  - name: 'Hex Auth'
+    url: 'https://dash.hexarion.net' 
+  - name: 'Hex Share'
+    url: 'https://share.hexarion.net'    
 admin:
   email: 'admin@hexstatus.com'
 
 footer:
-  copyright: 'Hex Status. All rights reserved.'
+  copyright: 'Hexarion'
   links:
     - text: 'Privacy Policy'
       url: '/privacy-policy'
@@ -84,6 +87,6 @@ discord:
     urls:
       thumbnail: 'https://hexarion.net/Hex-Status.png'
     site:
-      footer: 'Hex Status'
+      footer: '© 2023 - 2025 Hexarion'
     system:
       refresh_interval: 5000
