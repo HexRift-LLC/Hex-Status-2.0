@@ -30,27 +30,6 @@ function Footer() {
             <Typography variant="body2" color="text.secondary" align="center">
               © 2023 - {currentYear} {config.footer.copyright}
             </Typography>
-            <Stack 
-              direction="row" 
-              spacing={3} 
-              justifyContent="center" 
-              mt={2}
-            >
-              {config.footer.links.map((link, index) => (
-                <Link
-                  key={index}
-                  component={RouterLink}
-                  to={link.url}
-                  color="inherit"
-                  sx={{ 
-                    textDecoration: 'none',
-                    '&:hover': { color: 'primary.main' }
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
-            </Stack>
           </Grid>
         </Grid>
       </Container>
