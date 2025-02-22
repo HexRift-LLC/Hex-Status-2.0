@@ -113,7 +113,7 @@ class AuthClient {
             },
             {
                 name: 'Product',
-                value: 'Hex Status',
+                value: 'Hex Status 2.0',
                 inline: true
             },
             {
@@ -122,7 +122,7 @@ class AuthClient {
                 inline: true
             }], {
                 title: 'Authentication Success',
-                description: 'Hex Status successfully authenticated'
+                description: 'Hex Status 2.0 successfully authenticated'
             }
         );
     }
@@ -138,7 +138,7 @@ class AuthClient {
             },
             {
                 name: 'Product',
-                value: 'Hex Status',
+                value: 'Hex Status 2.0',
                 inline: true
             },
             {
@@ -152,7 +152,7 @@ class AuthClient {
                 inline: true
             }], {
                 title: 'Authentication Failure',
-                description: 'Hex Status authentication failed'
+                description: 'Hex Status 2.0 authentication failed'
             }
         );
     }
@@ -168,7 +168,7 @@ class AuthClient {
             },
             {
                 name: 'Product',
-                value: 'Hex Status',
+                value: 'Hex Status 2.0',
                 inline: true
             },
             {
