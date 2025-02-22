@@ -5,6 +5,8 @@ const fs = require('fs');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
 const chalk = require('chalk');
+const { createCanvas, registerFont } = require('canvas');
+const path = require('path');
 
 const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
 let statusMessage = null;
@@ -33,29 +35,26 @@ function updateServiceHistory(service, ping) {
     serviceHistory.set(service.name, history);
 }
 
+function setupFonts() {
+    const fontPath = path.join(process.cwd(), 'public', 'fonts', 'Arial.ttf');
+    registerFont(fontPath, { family: 'Arial' });
+}
+
+// Call this function once at the start of your script
+setupFonts();
+
 async function generateStatsGraph(services) {
-    function movingAverage(data, windowSize = 5) {
-        return data.map((_, idx, arr) => {
-            if (idx < windowSize - 1) return arr[idx];
-            const subset = arr.slice(idx - windowSize + 1, idx + 1);
-            return subset.reduce((sum, val) => sum + (val || 0), 0) / subset.length;
-        });
-    }
-
-    const datasets = services.map((service, index) => {
-        const rawHistory = serviceHistory.get(service.name) || Array(MAX_HISTORY_POINTS).fill(null);
-        const smoothedHistory = movingAverage(rawHistory, 5);
-
+    const datasets = services.map(service => {
+        const history = serviceHistory.get(service.name) || Array(MAX_HISTORY_POINTS).fill(null);
         return {
             label: service.name,
-            data: smoothedHistory,
+            data: history,
             borderColor: getServiceColor(service.name),
-            backgroundColor: getServiceColor(service.name).replace('1)', '0.5)'), // Adjusted opacity
-            tension: 0.3, // Adjusted for a more controlled curve
-            borderWidth: 1.5,
-            pointRadius: 0,
-            fill: true, // Ensures filled area
-            order: services.length - index, // Ensures correct layering
+            backgroundColor: getServiceColor(service.name).replace('1)', '0.3)'),
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 2,
+            fill: true,
         };
     });
 
@@ -77,28 +76,35 @@ async function generateStatsGraph(services) {
                         position: 'top',
                         labels: {
                             color: '#ffffff',
-                            font: { size: 13 }
+                            font: { size: 14, family: 'Arial' }  // Now using registered font
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        stacked: true, // Ensures layering consistency
                         grid: { color: 'rgba(255, 255, 255, 0.2)' },
-                        ticks: { color: '#ffffff', font: { size: 12 } }
+                        ticks: { color: '#ffffff', font: { size: 12, family: 'Arial' } }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#ffffff', maxRotation: 10, minRotation: 10, font: { size: 12 } }
+                        ticks: { 
+                            color: '#ffffff', 
+                            font: { size: 12, family: 'Arial' }, 
+                            maxRotation: 0, 
+                            minRotation: 0, 
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
                     }
                 },
                 animation: {
-                    duration: 500, // Slightly increased for smoother transitions
+                    duration: 400,
                     easing: 'easeInOutQuad'
                 }
             }
         });
+
         return buffer;
     } catch (error) {
         console.log(chalk.red("[System]"),"Error generating graph:", error);
@@ -132,16 +138,20 @@ function getStatusMessage(online, total) {
 function calculateStatusMetrics(servicesData) {
     const services = Array.isArray(servicesData) ? servicesData : Object.values(servicesData);
     
-    const onlineServices = services.filter(s => s.status === 'up');
+    // Explicitly check for 'down' status
+    const onlineServices = services.filter(s => s.status !== 'down');
+    const offlineServices = services.filter(s => s.status === 'down');
+    
     return {
         onlineServices,
         totalServices: services.length,
         avgResponseTime: services.reduce((acc, s) => acc + s.ping, 0) / services.length,
         degradedServices: services.filter(s => s.ping > 1000).length,
         totalUptime: Math.min(100, services.reduce((acc, s) => acc + s.uptime, 0) / services.length),
-        offlineServices: services.filter(s => s.status === 'down')
+        offlineServices
     };
 }
+
 
 function createStatusEmbed(metrics) {
     const statusColor = getStatusColor(metrics.onlineServices.length, metrics.totalServices);
@@ -188,20 +198,34 @@ function createStatusEmbed(metrics) {
         });
 }
 
+async function checkServiceStatus(service) {
+    try {
+        const response = await fetch(service.url, { method: 'GET', timeout: 5000 });
+        if (!response.ok) throw new Error('Service is down');
+        return { status: 'up', ping: Math.floor(Math.random() * 300) + 50 }; // Replace with actual ping
+    } catch {
+        return { status: 'down', ping: null };
+    }
+}
+
 async function updateStatusEmbed(client) {
     const channel = client.channels.cache.get(config.discord.channelId);
     if (!channel) return;
 
-    const services = config.services.map(service => {
-        const ping = service.ping || Math.floor(Math.random() * 300) + 50;
-        updateServiceHistory(service, ping);
-        return {
-            name: service.name,
-            status: service.status || 'up',
-            ping: ping,
-            uptime: service.uptime || 99.9
-        };
-    });
+const services = config.services.map(service => {
+    const ping = service.ping || Math.floor(Math.random() * 300) + 50;
+    updateServiceHistory(service, ping);
+    
+    // Ensure status is always properly defined
+    const status = typeof service.status === 'string' ? service.status.toLowerCase() : 'unknown';
+
+    return {
+        name: service.name,
+        status: status,  // Ensure it's not undefined
+        ping: ping,
+        uptime: service.uptime || 99.9
+    };
+});
 
     const metrics = calculateStatusMetrics(services);
     const graphBuffer = await generateStatsGraph(services);
@@ -222,11 +246,12 @@ async function updateStatusEmbed(client) {
         }
         saveState();
     } catch (error) {
-        console.log(chalk.red("[System]"),'Error updating status:', error);
+        console.log(chalk.red("[System]"), 'Error updating status:', error);
         statusMessage = await channel.send({ embeds: [embed], files: [attachment] });
         saveState();
     }
 }
+
 
 function saveState() {
     const state = {

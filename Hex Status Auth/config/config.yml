@@ -1,10 +1,10 @@
 auth:
-  license_key: AO3U4-V91HD-IK34I-67PRY-IIMJ6
+  license_key: "XXXX-XXXX-XXXX-XXXX-XXXX"
 
 app:
   name: "Hex Status"
   port: 3000
-  refreshInterval: 5000  # Status check interval in milliseconds
+  refreshInterval: 5000 
 
 monitoring:
   pingTimeout: 3000
@@ -12,8 +12,8 @@ monitoring:
   healthCheckInterval: 5000
 
 discord:
-  token: "MTMyNjc3MDc0MTE0MzY2NjcyOQ.GFGsTf.iBzSXQezyI31Dz4I62e38yaHFPgZuyrSmulF_A"
-  channelId: "1342463374692188310"
+  token: "XXXX-XXXX-XXXX-XXXX-XXXX"
+  channelId: "XXXX-XXXX-XXXX-XXXX-XXXX"
   thumbnail: "https://hexarion.net/Hex-Status.png"
   updateInterval: 10000  # Updates every 30 seconds
 

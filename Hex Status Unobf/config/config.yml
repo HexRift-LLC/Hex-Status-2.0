@@ -9,36 +9,36 @@ monitoring:
   healthCheckInterval: 5000
 
 discord:
-  token: "MTMyNjc3MDc0MTE0MzY2NjcyOQ.GFGsTf.iBzSXQezyI31Dz4I62e38yaHFPgZuyrSmulF_A"
-  channelId: "1342463374692188310"
+  token: "XXX-XXX-XXXX-XXX-XXXX"
+  channelId: "XXXX-XXXX-XXXX-XXXX"
   thumbnail: "https://hexarion.net/Hex-Status.png"
   updateInterval: 10000  # Updates every 30 seconds
-
 
 services:
   - name: "Website"
     url: "hexarion.net"
-    category: "Internal"
+    category: "Store"
     
   - name: "Forum"
     url: "forum.hexarion.net"
-    category: "Internal"
+    category: "Suggestion Forum"
 
   - name: "Track"
     url: "track.hexarion.net"
-    category: "Internal"
+    category: "Bug Tracker"
 
   - name: "Dashboard"
     url: "dash.hexarion.net"
-    category: "Internal"
+    category: "Auth Dashboard"
 
   - name: "Share"
     url: "share.hexarion.net"
-    category: "Internal"
+    category: "File Share"
 
   - name: "Auth"
     url: "api.hexarion.net"
-    category: "API"
+    category: "Auth API"
+
 footer:
   copyright: "Hex Status"
   version: "1.0.0"

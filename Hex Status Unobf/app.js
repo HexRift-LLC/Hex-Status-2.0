@@ -10,7 +10,6 @@ const fs = require('fs');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const axios = require('axios');
-const { Auth } = require('./API/auth.js');
 
 // Load configuration
 const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
