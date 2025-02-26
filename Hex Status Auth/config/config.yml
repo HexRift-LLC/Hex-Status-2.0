@@ -1,5 +1,5 @@
 auth:
-  license_key: "XXXX-XXXX-XXXX-XXXX-XXXX"
+  key: "XXXX-XXXX-XXXX-XXXX-XXXX"
 
 app:
   name: "Hex Status"
@@ -45,4 +45,4 @@ services:
     
 footer:
   copyright: "Hex Status"
-  version: "1.0.0"
+  version: "1.1.1"

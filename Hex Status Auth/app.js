@@ -17,7 +17,7 @@ const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
 
 class HexStatus {
     #PRODUCT_ID = "Hex Status 2.0";
-    #currentVersion = "1.0.0";
+    #currentVersion = "1.1.1";
     
     constructor() {
         this.botService = null;
@@ -80,7 +80,7 @@ class HexStatus {
             } else {
                 console.log(chalk.red("[Updater]"), 
                     `Hex Status (v${this.#currentVersion}) is outdated. Update to v${response.data.version}.`);
-                process.exit(1);
+                //process.exit(1);
             }
         } catch (error) {
             console.log(chalk.red("[Updater]"), "Version check failed:", 

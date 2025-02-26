@@ -1,53 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title><%= config.app.name %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= config.app.name %>
+    </title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/styles/main.css">
-
 </head>
+
 <body>
     <div class="dashboard-container">
+        <!-- Header Section -->
         <div class="dashboard-header">
-            <h1><%= config.app.name %></h1>
+            <h1>
+                <%= config.app.name %>
+            </h1>
             <div class="last-updated">Last updated: <span id="update-time"></span></div>
         </div>
 
+        <!-- Overview Grid -->
         <div class="overview-grid">
             <div class="overview-card">
                 <h3>📊 Total Services</h3>
-                <div class="value" id="total-services"><%= stats.totalServices %></div>
+                <div class="value" id="total-services">
+                    <%= stats.totalServices %>
+                </div>
             </div>
             <div class="overview-card">
                 <h3>✅ Services Up</h3>
-                <div class="value" id="services-up"><%= stats.servicesUp %></div>
+                <div class="value" id="services-up">
+                    <%= stats.servicesUp %>
+                </div>
             </div>
             <div class="overview-card">
                 <h3>❌ Services Down</h3>
-                <div class="value" id="services-down"><%= stats.servicesDown %></div>
+                <div class="value" id="services-down">
+                    <%= stats.servicesDown %>
+                </div>
             </div>
             <div class="overview-card">
                 <h3>⚡ Average Response</h3>
-                <div class="value" id="average-ping"><%= stats.averagePing %> ms</div>
+                <div class="value" id="average-ping">
+                    <%= stats.averagePing %> ms
+                </div>
             </div>
         </div>
-        
 
+        <!-- Services Grid -->
         <div class="services-grid">
             <% services.forEach(service => { 
-                const data = serviceData.get(service.name);
-            %>
+                const data = serviceData.get(service.name); %>
                 <div class="service-card" id="<%= service.name %>-card">
                     <div class="service-header">
                         <div class="service-title">
                             <span class="status-dot <%= data.status %>"></span>
-                            <h2><%= service.name %></h2>
+                            <h2>
+                                <%= service.name %>
+                            </h2>
                         </div>
-                        
-                        <span class="category-tag"><%= service.category %></span>
+                        <span class="category-tag">
+                            <%= service.category %>
+                        </span>
                     </div>
 
                     <div class="metrics-grid">
@@ -60,19 +79,19 @@
                         <div class="metric">
                             <div class="metric-label">Health Score</div>
                             <div class="metric-value" id="<%= service.name %>-health">
-                                <%= data.healthScore %>%
+                                <%= data.healthScore ? data.healthScore : 'N/A' %>%
                             </div>
                         </div>
                         <div class="metric">
                             <div class="metric-label">Uptime</div>
                             <div class="metric-value" id="<%= service.name %>-uptime">
-                                <%= data.uptime %>%
+                                <%= data.uptime ? data.uptime : 'N/A' %>%
                             </div>
                         </div>
                         <div class="metric">
                             <div class="metric-label">Last Check</div>
                             <div class="metric-value" id="<%= service.name %>-lastcheck">
-                                <%= moment(data.lastCheck).fromNow() %>
+                                <%= moment(data.lastCheck).format('HH:mm:ss') %>
                             </div>
                         </div>
                     </div>
@@ -84,110 +103,119 @@
             <% }); %>
         </div>
     </div>
+
+    <!-- Footer -->
     <footer class="dashboard-footer">
         <div class="footer-content">
             <div class="copyright">© 2023 - <%= new Date().getFullYear() %> <%= config.footer.copyright %></div>
             <div class="version">v<%= config.footer.version %></div>
         </div>
     </footer>
-    
+
     <script>
         const socket = io();
         const charts = new Map();
-    
-        // Function to initialize charts
+        const initialData = JSON.parse('<%- JSON.stringify([...serviceData].reduce((acc, [key, value]) => ({...acc, [key]: value.ping}), {})) %>');
+
+        const chartConfig = {
+            type: 'line',
+            data: {
+                labels: [], // Placeholder for the labels
+                datasets: [{
+                    data: [], // Placeholder for the data points
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        };
+
         function initializeCharts() {
             document.querySelectorAll(".chart-container canvas").forEach(chartCanvas => {
-                let serviceName = chartCanvas.id.replace("-chart", ""); // Extract service name from ID
-                let chartContext = chartCanvas.getContext("2d");
-    
+                const serviceName = chartCanvas.id.replace("-chart", "");
+                const chartContext = chartCanvas.getContext("2d");
+
+                const serviceData = initialData[serviceName] || [];
                 charts.set(serviceName, new Chart(chartContext, {
-                    type: "line",
+                    ...chartConfig,
                     data: {
-                        labels: [],
+                        labels: Array(serviceData.length).fill(''),
                         datasets: [{
-                            label: "Response Time (ms)",
-                            data: [],
-                            borderColor: "#3b82f6",
-                            backgroundColor: "rgba(59, 130, 246, 0.1)",
-                            tension: 0.4,
-                            fill: true
+                            data: serviceData.map(p => ({ y: p }))
                         }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: "rgba(255, 255, 255, 0.1)" },
-                                ticks: { color: "#94a3b8" }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: "#94a3b8" }
-                            }
-                        }
                     }
                 }));
             });
         }
-    
-        // Initialize charts when DOM is fully loaded
-        document.addEventListener("DOMContentLoaded", initializeCharts);
-    
-        // Function to safely update DOM elements
+
         function updateElement(id, value) {
             const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
+            if (element) element.textContent = value;
         }
-    
-        socket.on("statusUpdate", ({ service, data, stats }) => {
-    const safeName = service.replace(/\s+/g, "_"); // Ensure safe ID usage
 
-    // Ensure data.ping exists before accessing .length
-    if (!data || !Array.isArray(data.ping)) {
-        console.warn(`Missing or invalid ping data for ${safeName}`, data);
-        return; // Stop execution if data.ping is undefined
-    }
+        function updateServiceMetrics(serviceName, data) {
+            updateElement(`${serviceName}-ping`, `${data.ping[data.ping.length - 1] || "N/A"} ms`);
+            updateElement(`${serviceName}-health`, `${data.healthScore || 'N/A'}%`);
+            updateElement(`${serviceName}-uptime`, `${data.uptime || 'N/A'}%`);
+            updateElement(`${serviceName}-lastcheck`, moment(data.lastCheck).format('HH:mm:ss'));
+        }
 
-    // Update service-specific elements
-    updateElement(`${safeName}-status`, data.status.toUpperCase());
-    updateElement(`${safeName}-ping`, `${data.ping[data.ping.length - 1] || "N/A"} ms`);
-    updateElement(`${safeName}-health`, `${data.healthScore}%`);
-    updateElement(`${safeName}-uptime`, `${data.uptime}%`);
+        function updateGlobalStats(stats) {
+            if (!stats) return;
+            updateElement("total-services", stats.totalServices);
+            updateElement("services-up", stats.servicesUp);
+            updateElement("services-down", stats.servicesDown);
+            updateElement("average-ping", `${stats.averagePing} ms`);
+        }
 
-    // Update status indicators
-    const statusBadge = document.querySelector(`#${safeName}-card .status-badge`);
-    if (statusBadge) {
-        statusBadge.className = `status-badge ${data.status}`;
-    }
+        socket.on('statusUpdate', ({ service, data }) => {
+            const serviceName = service.toString().replace(/\s+/g, "_");
 
-    // Update chart if it exists
-    const chart = charts.get(safeName);
-    if (chart) {
-        chart.data.labels = Array(data.ping.length).fill(""); // Now safe
-        chart.data.datasets[0].data = data.ping;
-        chart.update();
-    }
+            updateServiceMetrics(serviceName, data);
 
-    // Update global stats
-    updateElement("total-services", stats.totalServices);
-    updateElement("services-up", stats.servicesUp);
-    updateElement("services-down", stats.servicesDown);
-    updateElement("average-ping", `${stats.averagePing} ms`);
-    updateElement("overall-health", `${stats.overallHealth}%`);
+            const statusDot = document.querySelector(`#${serviceName}-card .status-dot`);
+            if (statusDot) {
+                statusDot.className = `status-dot ${data.status}`;
+            }
 
-    // Update the last updated timestamp
-    updateElement("update-time", moment().format("MMMM D, YYYY HH:mm:ss"));
-});
+            const chart = charts.get(serviceName);
+            if (chart && Array.isArray(data.ping)) {
+                chart.data.datasets[0].data = data.ping.map(p => ({ y: p }));
+                chart.data.labels = Array(data.ping.length).fill('');
+                chart.update('none');
+            }
+        });
 
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeCharts();
+
+            document.getElementById('update-time').textContent = moment().format('MMMM D, YYYY HH:mm:ss');
+
+            setInterval(() => {
+                document.getElementById('update-time').textContent = moment().format('MMMM D, YYYY HH:mm:ss');
+            }, 1000);
+        });
     </script>
-    
+
 </body>
+
 </html>

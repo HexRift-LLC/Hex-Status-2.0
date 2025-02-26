@@ -1,7 +1,10 @@
 app:
   name: "Hex Status"
   port: 3000
-  refreshInterval: 5000  # Status check interval in milliseconds
+  refreshInterval: 5000  
+
+database:
+  url: "mongodb://localhost/hex-status"
 
 monitoring:
   pingTimeout: 3000
@@ -9,10 +12,10 @@ monitoring:
   healthCheckInterval: 5000
 
 discord:
-  token: "XXX-XXX-XXXX-XXX-XXXX"
-  channelId: "XXXX-XXXX-XXXX-XXXX"
+  token: "MTMyNjc3MDc0MTE0MzY2NjcyOQ.GFGsTf.iBzSXQezyI31Dz4I62e38yaHFPgZuyrSmulF_A"
+  channelId: "1342463374692188310"
   thumbnail: "https://hexarion.net/Hex-Status.png"
-  updateInterval: 10000  # Updates every 30 seconds
+  updateInterval: 10000 
 
 services:
   - name: "Website"
