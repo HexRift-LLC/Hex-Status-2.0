@@ -3,7 +3,7 @@ const path = require('path');
 const JavaScriptObfuscator = require('javascript-obfuscator');
 
 const sourceDir = __dirname; // The main directory of your app
-const buildDir = path.join(__dirname, 'dist'); // Output directory for obfuscated files
+const buildDir = path.join(__dirname, 'release'); // Output directory for obfuscated files
 
 // Ensure the build directory exists
 if (!fs.existsSync(buildDir)) {
@@ -48,4 +48,4 @@ const processDirectory = (dir) => {
 // Start processing files
 processDirectory(sourceDir);
 
-console.log('Build complete. Obfuscated files are in the "dist" folder.');
+console.log('Build complete. Obfuscated files are in the "release" folder.');
