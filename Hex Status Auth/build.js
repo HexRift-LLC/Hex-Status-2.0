@@ -25,7 +25,7 @@ const obfuscateFile = (filePath, outputPath) => {
     fs.writeFileSync(outputPath, obfuscatedCode);
 };
 
-// Process all JS files (excluding node_modules and dist folders)
+// Process all JS files (excluding node_modules and npm run buildrelease folders)
 const processDirectory = (dir) => {
     fs.readdirSync(dir).forEach(file => {
         const filePath = path.join(dir, file);
