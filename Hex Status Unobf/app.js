@@ -10,275 +10,347 @@ const fs = require('fs');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const axios = require('axios');
-const db = require('./config/database');
-const chokidar = require('chokidar');
-const path = require('path');
+const { version } = require('./package.json');
 
-const config = yaml.load(fs.readFileSync(path.join(__dirname, 'config', 'config.yml'), 'utf8'));
+// Load configuration
+const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
+  class HexStatus {
+      static HEALTH_DECAY_RATE = 0.5;
+      static HEALTH_RECOVERY_RATE = 1;
+      static OFFLINE_RESPONSE_TIME = 9999;
 
-class HexStatus {
-    #PRODUCT_ID = "Hex Status 2.0";
-    #currentVersion = "1.0.0";
+      #PRODUCT_ID = "Hex Status 2.0";
+      #currentVersion = version;
     
-    constructor() {
-        this.botService = null;
-        this.server = http;
-        this.isShuttingDown = false;
-        this.serviceData = new Map();
-        this.setupConfigWatcher();
-        this.setupMonitoring = this.setupMonitoring.bind(this); // Bind the method to ensure proper `this`
+      constructor() {
+          this.botService = null;
+          this.server = http;
+          this.isShuttingDown = false;
+          this.serviceData = new Map();
+          this.initializeServices();
+        
+          fs.watch('./config/config.yml', (eventType, filename) => {
+              if (eventType === 'change') {
+                  try {
+                      const newConfig = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
+                      Object.assign(config, newConfig);
+                    
+                      this.serviceData.clear();
+                      this.initializeServices();
+                    
+                      console.log(chalk.green('[Config]'), 'Configuration updated successfully');
+                    
+                      io.emit('configUpdate', {
+                          config: config,
+                          services: config.services
+                      });
+                  } catch (error) {
+                      console.log(chalk.red('[Config]'), 'Error updating configuration:', error.message);
+                  }
+              }
+          });
+      }
 
-    }
+      initializeServices() {
+          config.services.forEach(service => {
+              this.serviceData.set(service.name, {
+                  ping: [],
+                  status: 'unknown',
+                  uptime: {
+                      total: 100,
+                      history: [],
+                      lastDowntime: null,
+                      totalDowntime: 0
+                  },
+                  lastCheck: Date.now(),
+                  downtimes: [],
+                  healthScore: 100,
+                  responseTime: []
+              });
+          });
+      }
 
-    async setupMonitoring() {
-        this.monitorServices();
-        setInterval(() => this.monitorServices(), config.app.refreshInterval);
-    }
-
-    setupConfigWatcher() {
-        const configPath = path.join(__dirname, 'config', 'config.yml');
-        chokidar.watch(configPath).on('change', () => {
-            try {
-                const newConfig = yaml.load(fs.readFileSync(configPath, 'utf8'));
-                Object.assign(config, newConfig);
-
-                this.initializeServices().then(() => this.monitorServices());
-
-                console.log(chalk.green("[Config]"), "Configuration reloaded successfully");
-            } catch (error) {
-                console.error(chalk.red("[Config]"), "Error reloading configuration:", error);
-            }
-        });
-    }
-
-    async initializeServices() {
-        try {
-            for (const service of config.services) {
-                const serviceDoc = await db.Service.findOneAndUpdate(
-                    { name: service.name },
-                    {
-                        name: service.name,
-                        status: 'unknown',
-                        ping: [],
-                        uptime: 100,
-                        lastCheck: Date.now(),
-                        downtimes: [],
-                        healthScore: 100,
-                        responseTime: [],
-                        uptimeHistory: [],
-                        healthScoreHistory: [],
-                        category: service.category
-                    },
-                    { upsert: true, new: true }
-                );
-                this.serviceData.set(service.name, serviceDoc);
-            }
-        } catch (error) {
-            console.error(chalk.red("[Database]"), "Service initialization failed:", error);
-            throw error;
-        }
-    }
-
-    setupSocketIO() {
-        io.on('connection', (socket) => {
-            console.log(chalk.green("[Socket]"), "Client connected");
-
-            socket.on('requestUpdate', async () => {
-                const stats = await this.calculateStats();
-                const services = Array.from(this.serviceData.values());
-                socket.emit('statsUpdate', { stats, services });
-            });
-
-            socket.on('disconnect', () => {
-                console.log(chalk.yellow("[Socket]"), "Client disconnected");
-            });
-        });
-    }
-
-    async startServer() {
-        try {
-            this.displayWelcome();
-            await db.connect();
-            await this.initializeServices();
-            await this.checkVersion();
-            this.setupSocketIO();
-            this.setupRoutes();
-            this.setupMonitoring();
-            this.setupGracefulShutdown();
+      async startServer() {
+          try {
+              this.displayWelcome();
+              await this.checkVersion();
+              this.setupRoutes();
+              this.setupMonitoring();
+              this.setupGracefulShutdown();
             
-            this.server.listen(config.app.port, () => {
-                console.log(chalk.yellow("[System]"), `Server running on port ${config.app.port}`);
-            });
-        } catch (error) {
-            console.error(chalk.red("[Error]"), "Failed to start server:", error.message);
-            process.exit(1);
-        }
+              this.server.listen(config.app.port, () => {
+                  console.log(chalk.yellow("[System]"), `Server running on port ${config.app.port}`);
+              });
+          } catch (error) {
+              console.log(chalk.red("[Error]"), "Failed to start server:", error.message);
+              process.exit(1);
+          }
+      }
+
+      async checkVersion() {
+          try {
+              const response = await axios.get(
+                  `https://hexarion.net/api/version/${this.#PRODUCT_ID}?current=${this.#currentVersion}`,
+                  {
+                      headers: {
+                          "x-api-key": "8IOLaAYzGJNwcYb@bm1&WOcr%aK5!O",
+                      },
+                  }
+              );
+
+              if (!response.data.version) {
+                  console.log(chalk.yellow("[Updater]"), "Version information not available");
+                  return;
+              }
+
+              if (response.data.same) {
+                  console.log(chalk.green("[Updater]"), `Hex Status (v${this.#currentVersion}) is up to date!`);
+              } else {
+                  console.log(chalk.red("[Updater]"), 
+                      `Hex Status (v${this.#currentVersion}) is outdated. Update to v${response.data.version}.`);
+              }
+          } catch (error) {
+              console.log(chalk.red("[Updater]"), "Version check failed:", 
+                  error.response?.data?.error || error.message);
+          }
+      }
+
+      setupRoutes() {
+          app.set('view engine', 'ejs');
+          app.use(express.static('public'));
+
+          app.get('/', (req, res) => {
+              res.render('index', {
+                  config: config,
+                  version: this.#currentVersion,
+                  services: config.services,
+                  serviceData: this.serviceData,
+                  stats: this.calculateStats(),
+                  moment: moment
+              });
+          });
+      }
+
+      setupMonitoring() {
+          const monitorInterval = setInterval(
+              () => this.monitorServices(), 
+              config.app.refreshInterval
+          );
+      }
+
+      calculateUptime(downtimes) {
+          const now = Date.now();
+          const dayAgo = now - (24 * 60 * 60 * 1000); // 24 hours ago
+          
+          const totalDowntime = downtimes.reduce((total, downtime) => {
+              const start = Math.max(dayAgo, new Date(downtime.start).getTime());
+              const end = downtime.end ? new Date(downtime.end).getTime() : now;
+              return total + (end - start);
+          }, 0);
+
+          const uptimePercentage = ((24 * 60 * 60 * 1000) - totalDowntime) / (24 * 60 * 60 * 1000) * 100;
+          return Math.max(0, Math.min(100, uptimePercentage));
+      }
+
+      async monitorServices() {
+          for (const service of config.services) {
+              try {
+                  const result = await ping.promise.probe(service.url);
+                  const data = this.serviceData.get(service.name);
+                  const previousStatus = data.status;
+                  
+                  data.status = result.alive ? 'up' : 'down';
+                  data.lastCheck = Date.now();
+
+                  // Update downtimes tracking
+                  if (data.status === 'down' && previousStatus !== 'down') {
+                      data.downtimes.push({
+                          start: new Date().toISOString(),
+                          end: null
+                      });
+                  } else if (data.status === 'up' && previousStatus === 'down') {
+                      const lastDowntime = data.downtimes[data.downtimes.length - 1];
+                      if (lastDowntime) {
+                          lastDowntime.end = new Date().toISOString();
+                      }
+                  }
+
+                  // Calculate current uptime
+                  data.uptime = this.calculateUptime(data.downtimes);
+
+                  if (result.alive) {
+                      data.healthScore = Math.min(100, data.healthScore + HexStatus.HEALTH_RECOVERY_RATE);
+                  } else {
+                      data.healthScore = Math.max(0, data.healthScore - HexStatus.HEALTH_DECAY_RATE);
+                  }
+
+                  if (result.alive) {
+                      data.ping.push(result.time);
+                  } else {
+                      data.ping.push(HexStatus.OFFLINE_RESPONSE_TIME);
+                  }
+
+                  if (data.ping.length > config.monitoring.maxHistoryPoints) {
+                      data.ping.shift();
+                  }
+
+                  this.emitStatusUpdate(service.name, data);
+
+              } catch (error) {
+                  this.handleMonitoringError(service.name, error);
+              }
+          }
+      }
+
+      updateDowntimeTracking(data, previousStatus) {
+          if (previousStatus === 'up' && data.status === 'down') {
+              data.downtimes.push({
+                  start: moment().format(),
+                  end: null
+              });
+          } else if (previousStatus === 'down' && data.status === 'up') {
+              const lastDowntime = data.downtimes[data.downtimes.length - 1];
+              if (lastDowntime) lastDowntime.end = moment().format();
+          }
+      }
+
+      emitStatusUpdate(serviceName, data) {
+          io.emit('statusUpdate', {
+              service: serviceName,
+              data: {
+                  status: data.status,
+                  ping: data.ping,
+                  uptime: data.uptime,
+                  healthScore: data.healthScore,
+                  lastCheck: data.lastCheck,
+                  responseTime: data.responseTime
+              },
+              stats: this.calculateStats()
+          });
+      }
+
+      handleMonitoringError(serviceName, error) {
+          const data = this.serviceData.get(serviceName);
+          data.status = 'down';
+          data.healthScore = 0;
+          data.uptime = 0;
+        
+          io.emit('statusUpdate', {
+              service: serviceName,
+              data: {
+                  status: 'down',
+                  healthScore: 0,
+                  uptime: 0,
+                  error: error.message
+              },
+              stats: this.calculateStats()
+          });
+      }
+
+      calculateStats() {
+          let totalUp = 0;
+          let totalDown = 0;
+          let avgPing = 0;
+          let pingCount = 0;
+
+          this.serviceData.forEach(data => {
+              if (data.status === 'up') totalUp++;
+              if (data.status === 'down') totalDown++;
+              if (data.ping.length) {
+                  avgPing += data.ping.reduce((a, b) => a + b, 0);
+                  pingCount += data.ping.length;
+              }
+          });
+
+          return {
+              totalServices: config.services.length,
+              servicesUp: totalUp,
+              servicesDown: totalDown,
+              averagePing: pingCount ? (avgPing / pingCount).toFixed(2) : 0,
+              overallHealth: ((totalUp / config.services.length) * 100).toFixed(1)
+          };
+      }
+
+      calculateUptime(downtimes) {
+        const now = Date.now();
+        const dayAgo = now - (24 * 60 * 60 * 1000);
+        
+        const totalDowntime = downtimes.reduce((total, downtime) => {
+            const start = Math.max(dayAgo, new Date(downtime.start).getTime());
+            const end = downtime.end ? new Date(downtime.end).getTime() : now;
+            return total + (end - start);
+        }, 0);
+    
+        const uptimePercentage = ((24 * 60 * 60 * 1000) - totalDowntime) / (24 * 60 * 60 * 1000) * 100;
+        return uptimePercentage.toFixed(2);
     }
+    
 
-    async checkVersion() {
-        try {
-            const response = await axios.get(
-                `https://hexarion.net/api/version/${this.#PRODUCT_ID}?current=${this.#currentVersion}`,
-                { 
-                    headers: { "x-api-key": "8IOLaAYzGJNwcYb@bm1&WOcr%aK5!O" },
-                    timeout: 5000
-                }
-            );
+      displayWelcome() {
+          console.clear();
+          console.log("\n");
+          console.log(
+              chalk.red(
+                  figlet.textSync("Hex Status", {
+                      font: "ANSI Shadow",
+                      horizontalLayout: "full",
+                  })
+              )
+          );
+          console.log("\n");
+          console.log(chalk.red("━".repeat(70)));
+          console.log(
+              chalk.white.bold(
+                  "      Welcome to Hex Status - The Ultimate Status Page Solution   "
+              )
+          );
+          console.log(chalk.red("━".repeat(70)), "\n");
+      }
 
-            if (!response.data.version) {
-                console.log(chalk.yellow("[Updater]"), "Version information not available");
-                return;
-            }
+      setupGracefulShutdown() {
+          const shutdown = async () => {
+              if (this.isShuttingDown) return;
+              this.isShuttingDown = true;
+    
+              console.log(chalk.yellow("[System]"), "Graceful shutdown initiated...");
+    
+              const forceKillTimeout = setTimeout(() => {
+                  console.log(chalk.red("[System]"), "Force killing process after timeout");
+                  process.exit(1);
+              }, 5000);
+    
+              try {
+                  if (this.server) {
+                      await new Promise(resolve => this.server.close(resolve));
+                  }
+    
+                  if (this.botService) {
+                      await this.botService.cleanup();
+                  }
+    
+                  clearTimeout(forceKillTimeout);
+                  console.log(chalk.green("[System]"), "Graceful shutdown completed");
+                  process.exit(0);
+              } catch (error) {
+                  clearTimeout(forceKillTimeout);
+                  console.error(chalk.red("[Error]"), "Shutdown error:", error);
+                  process.exit(1);
+              }
+          };
+    
+          process.on('SIGTERM', shutdown);
+          process.on('SIGINT', shutdown);
+          process.on('uncaughtException', (error) => {
+              console.error(chalk.red("[Error]"), "Uncaught Exception:", error);
+              shutdown();
+          });
+      }
+}  
 
-            if (response.data.same) {
-                console.log(chalk.green("[Updater]"), `Hex Status (v${this.#currentVersion}) is up to date!`);
-            } else {
-                console.log(chalk.red("[Updater]"), `Hex Status (v${this.#currentVersion}) is outdated. Update to v${response.data.version}.`);
-                await this.cleanup();
-                process.exit(1);
-            }
-        } catch (error) {
-            console.error(chalk.red("[Updater]"), "Version check failed:", error.response?.data?.error || error.message);
-        }
-    }
+// Global error handlers
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(chalk.red("[Error]"), 'Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
-    setupRoutes() {
-        app.set('view engine', 'ejs');
-        app.use(express.static('public'));
-
-        app.get('/', async (req, res) => {
-            try {
-                const services = Array.from(this.serviceData.entries()).map(([name, data]) => ({
-                    name,
-                    ...data.toObject()
-                }));
-
-                res.render('index', {
-                    config,
-                    services,
-                    serviceData: this.serviceData,
-                    stats: await this.calculateStats(),
-                    moment
-                });
-            } catch (error) {
-                res.status(500).send('Internal Server Error');
-            }
-        });
-
-        app.get('/api/status', async (req, res) => {
-            try {
-                const stats = await this.calculateStats();
-                const services = Array.from(this.serviceData.values());
-                res.json({ stats, services });
-            } catch (error) {
-                res.status(500).json({ error: error.message });
-            }
-        });
-    }
-
-    async monitorServices() {
-        const monitoringPromises = config.services.map(service => this.monitorService(service));
-        await Promise.allSettled(monitoringPromises);
-        await this.updateDiscordStatus();
-    }
-
-    async monitorService(service) {
-        try {
-            const startTime = Date.now();
-            const result = await ping.promise.probe(service.url, {
-                timeout: config.monitoring.pingTimeout
-            });
-
-            const serviceData = this.serviceData.get(service.name);
-            const previousStatus = serviceData.status;
-            const currentStatus = result.alive ? 'up' : 'down';
-
-            serviceData.status = currentStatus;
-            serviceData.lastCheck = Date.now();
-
-            if (currentStatus === 'up') {
-                serviceData.ping.push(result.time);
-                serviceData.healthScore = Math.min(100, parseFloat(serviceData.healthScore) + 0.5).toFixed(1);
-                serviceData.uptime = Math.min(100, parseFloat(serviceData.uptime) + 0.2).toFixed(2);
-            } else {
-                serviceData.ping.push(0);
-                serviceData.healthScore = Math.max(0, parseFloat(serviceData.healthScore) - 2).toFixed(1);
-                serviceData.uptime = Math.max(0, parseFloat(serviceData.uptime) - 1).toFixed(2);
-            }
-
-            if (serviceData.ping.length > config.monitoring.maxHistoryPoints) {
-                serviceData.ping.shift();
-            }
-
-            await serviceData.save();
-
-            io.emit('statusUpdate', {
-                service: service.name,
-                data: {
-                    status: serviceData.status,
-                    ping: serviceData.ping,
-                    healthScore: serviceData.healthScore,
-                    uptime: serviceData.uptime,
-                    lastCheck: serviceData.lastCheck
-                },
-                stats: await this.calculateStats()
-            });
-        } catch (error) {
-            await this.handleMonitoringError(service.name, error);
-        }
-    }
-
-    async handleMonitoringError(serviceName, error) {
-        try {
-            const serviceData = this.serviceData.get(serviceName);
-            const previousStatus = serviceData.status;
-
-            serviceData.status = 'down';
-            serviceData.healthScore = 0;
-            serviceData.lastCheck = Date.now();
-
-            this.updateDowntimeTracking(serviceData, previousStatus);
-            serviceData.uptime = this.calculateUptime(serviceData.downtimes);
-
-            await serviceData.save();
-
-            io.emit('statusUpdate', {
-                service: serviceName,
-                data: serviceData,
-                error: error.message,
-                stats: await this.calculateStats()
-            });
-
-            console.error(chalk.red("[Monitoring]"), `Error monitoring ${serviceName}:`, error.message);
-        } catch (dbError) {
-            console.error(chalk.red("[Database]"), "Error saving service state:", dbError);
-        }
-    }
-
-    displayWelcome() {
-        figlet('Hex Status 2.0', (err, data) => {
-            if (err) console.log(chalk.red("[System]"), "Welcome message error:", err);
-            else console.log(chalk.cyan(data));
-        });
-    }
-
-    async cleanup() {
-        try {
-            await db.disconnect();
-            console.log(chalk.green("[System]"), "Clean shutdown complete.");
-        } catch (error) {
-            console.error(chalk.red("[System]"), "Cleanup failed:", error);
-        }
-    }
-
-    async setupGracefulShutdown() {
-        process.on('SIGINT', async () => {
-            console.log(chalk.yellow("[System]"), "Shutting down...");
-            await this.cleanup();
-            process.exit();
-        });
-    }
-}
-
-const hexStatus = new HexStatus();
-hexStatus.startServer();
+// Start the application
+new HexStatus().startServer();

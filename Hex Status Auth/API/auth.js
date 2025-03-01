@@ -5,10 +5,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const os = require('os');
+const { version } = require('../package.json');
 
 class LicenseChecker {
-    #currentVersion = '1.1.1';
-    #baseUrl = 'https://dash.hexarion.net/api';
+    #currentVersion = version;
+    #baseUrl = 'https://api.hexarion.net/api';
     #hwid;
 
     constructor() {

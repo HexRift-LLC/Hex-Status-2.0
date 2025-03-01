@@ -45,4 +45,3 @@ services:
     
 footer:
   copyright: "Hex Status"
-  version: "1.1.1"

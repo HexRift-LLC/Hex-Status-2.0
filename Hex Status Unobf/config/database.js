@@ -39,6 +39,9 @@ module.exports = {
             useUnifiedTopology: true
         });
     },
+    disconnect: async () => {
+        await mongoose.connection.close();
+    },
     Service,
     BotState
 };
