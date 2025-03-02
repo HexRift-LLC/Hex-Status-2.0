@@ -32,7 +32,7 @@ const processDirectory = (dir) => {
         const outputPath = path.join(buildDir, path.relative(sourceDir, filePath));
 
         if (fs.statSync(filePath).isDirectory()) {
-            if (!filePath.includes('node_modules') && !filePath.includes('dist')) {
+            if (!filePath.includes('node_modules') && !filePath.includes('release')) {
                 fs.mkdirSync(outputPath, { recursive: true });
                 processDirectory(filePath);
             }
