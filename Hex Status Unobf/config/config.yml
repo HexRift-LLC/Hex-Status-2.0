@@ -14,6 +14,10 @@ discord:
   thumbnail: "https://hexarion.net/Hex-Status.png"
   updateInterval: 10000  # Updates every 30 seconds
 
+analytics:
+  google:
+    enabled: true
+    tracking_id: "G-XXXXXXXXXX"
 
 services:
   - name: "Website"

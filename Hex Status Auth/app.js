@@ -120,7 +120,7 @@ const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
       setupRoutes() {
           app.set('view engine', 'ejs');
           app.use(express.static('public'));
-
+          app.locals.config = config;
           app.get('/', (req, res) => {
               res.render('index', {
                   config: config,
