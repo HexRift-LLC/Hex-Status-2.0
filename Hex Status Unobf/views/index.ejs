@@ -6,11 +6,13 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <link rel="stylesheet" href="/styles/main.css">
 
 </head>
 <body>
     <div class="dashboard-container">
+        <div id="particles-js" class="particle-background"></div>
         <div class="dashboard-header">
             <h1><%= config.app.name %></h1>
             <div class="last-updated">Last updated: <span id="update-time"></span></div>
@@ -102,5 +104,6 @@
             gtag('config', '<%= config.analytics.google.tracking_id %>');
         </script>
     <% } %>
+    <script src="/js/particles.js"></script>
 </body>
 </html>
