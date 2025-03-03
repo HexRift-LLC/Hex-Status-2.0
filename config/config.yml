@@ -22,7 +22,6 @@ analytics:
     enabled: true
     tracking_id: "G-XXXXXXXXXX"
 
-
 services:
   - name: "Website"
     url: "hexarion.net"

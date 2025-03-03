@@ -7,7 +7,7 @@
     "build": "node build.js"
   },
   "keywords": [],
-  "author": "Hexarion",
+  "author": "HexRift",
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^2.4.3",

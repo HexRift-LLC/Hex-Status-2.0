@@ -9,7 +9,7 @@ const { version } = require('../package.json');
 
 class LicenseChecker {
     #currentVersion = version;
-    #baseUrl = 'https://api.hexarion.net/api';
+    #baseUrl = 'https://api.hexrift.net/api';
     #hwid;
 
     constructor() {

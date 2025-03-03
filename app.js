@@ -74,7 +74,7 @@ const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
       async startServer() {
           try {
               this.displayWelcome();
-              Auth();
+               Auth();
               await this.checkVersion();
               this.setupRoutes();
               this.setupMonitoring();
@@ -92,7 +92,7 @@ const config = yaml.load(fs.readFileSync('./config/config.yml', 'utf8'));
       async checkVersion() {
           try {
               const response = await axios.get(
-                  `https://hexarion.net/api/version/${this.#PRODUCT_ID}?current=${this.#currentVersion}`,
+                  `https://hexrift.net/api/version/${this.#PRODUCT_ID}?current=${this.#currentVersion}`,
                   {
                       headers: {
                           "x-api-key": "8IOLaAYzGJNwcYb@bm1&WOcr%aK5!O",
