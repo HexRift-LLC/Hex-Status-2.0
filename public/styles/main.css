@@ -3,7 +3,7 @@
     --bg-secondary: #12141a;
     --bg-tertiary: #1a1d24;
     --accent: #6366f1;
-    --accent-secondary: #8b5cf6;
+    --accent-secondary: #8B5CF6;
     --accent-tertiary: #ec4899;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
@@ -135,8 +135,8 @@
   .status-dot.offline { background: var(--danger); }
   
   .category-tag {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--accent);
+    background: #8B5CF6;
+    color: #ffffff;
     padding: 0.5rem 1rem;
     border-radius: 999px;
     font-size: 0.875rem;
