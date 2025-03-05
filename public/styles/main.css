@@ -1,37 +1,50 @@
 :root {
-    --bg-primary: #0a0b0e;
-    --bg-secondary: #12141a;
-    --bg-tertiary: #1a1d24;
-    --accent: #6366f1;
-    --accent-secondary: #8B5CF6;
-    --accent-tertiary: #ec4899;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --border: rgba(46, 52, 64, 0.5);
+      --bg-primary: #0a0b0e;
+      --bg-secondary: #12141a;
+      --bg-tertiary: #1a1d24;
+      --accent: #6366f1;
+      --accent-secondary: #8B5CF6;
+      --accent-tertiary: #ec4899;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: rgba(46, 52, 64, 0.5);
     
-    --gradient-primary: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-    --transition-normal: 0.3s ease;
-  }
+      --gradient-primary: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+      --transition-normal: 0.3s ease;
+      --card-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      --transition-speed: 0.3s;
+    }
   
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
   
-  body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    line-height: 1.6;
-    min-height: 100vh;
-    background-image: 
+    body {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+  
+    .service-card {
+      transition: all var(--transition-speed);
+    }
+  
+    .service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-shadow);
+    }
+    background-image:  
       radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 25%),
       radial-gradient(circle at 0% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 25%);
+      
   }
   
   .dashboard-container {
@@ -124,16 +137,27 @@
     align-items: center;
     gap: 0.75rem;
   }
-  
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-  
-  .status-dot.online { background: var(--success); }
-  .status-dot.offline { background: var(--danger); }
-  
+      .status-dot {
+        position: relative;
+      }
+
+      .status-dot::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: pulse-small 2s infinite;
+      }
+
+      @keyframes pulse-small {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 0.8; }
+      }
+
+      .status-dot.online { background: var(--success); }
+      .status-dot.offline { background: var(--danger); }
   .category-tag {
     background: #8B5CF6;
     color: #ffffff;
@@ -208,6 +232,7 @@
 }
 
 .status-dot {
+  
     width: 8px;
     height: 8px;
     border-radius: 50%;
