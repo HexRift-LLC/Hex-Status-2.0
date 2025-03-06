@@ -1,51 +1,72 @@
+# ==========================================================
+# Hex Status 2.0 - Configuration File
+# ==========================================================
+
+# Authentication
+# --------------
 auth:
-  key: "XXXX-XXXX-XXXX-XXXX-XXXX"
+  key: "Your license Key"  # Your license key
 
+# Application Settings
+# -------------------
 app:
-  name: "Hex Status"
-  port: 3000
-  refreshInterval: 5000 
+  name: "Hex Status"             # Application name displayed in UI
+  port: 3000                     # Port to run the web server on
+  refreshInterval: 5000          # Monitoring refresh in milliseconds
 
+# Monitoring Settings
+# ------------------
 monitoring:
-  pingTimeout: 3000
-  maxHistoryPoints: 100
-  healthCheckInterval: 5000
+  pingTimeout: 3000              # Timeout for ping requests in ms
+  maxHistoryPoints: 100          # Maximum datapoints to store per service
+  healthCheckInterval: 5000      # Health check interval in ms
 
+# Discord Integration
+# ------------------
 discord:
-  token: "XXXX-XXXX-XXXX-XXXX-XXXX"
-  channelId: "XXXX-XXXX-XXXX-XXXX-XXXX"
-  thumbnail: "https://hexarion.net/Hex-Status.png"
-  updateInterval: 10000  # Updates every 30 seconds
+  enabled: true                  # Enable Discord integration
+  token: "Your Discord Bots Token"    # Discord bot token
+  channelId: "Your Channel ID"   # Channel ID for status updates
+  thumbnail: "https://img.hexrift.net/HS.png"  # Thumbnail image URL
+  image: "https://img.hexrift.net/Banner.png"  # Image URL
+  updateInterval: 10000          # Updates every 10 seconds
 
+# Analytics Configuration
+# ----------------------
 analytics:
   google:
     enabled: true
-    tracking_id: "G-XXXXXXXXXX"
+    tracking_id: "Your Google Tracking ID"  # Google Analytics tracking ID
 
+# Services to Monitor
+# ------------------
 services:
   - name: "Website"
-    url: "hexarion.net"
-    category: "Internal"
+    url: "https://hexrift.net"
+    category: "Store"
     
   - name: "Forum"
-    url: "forum.hexarion.net"
-    category: "Internal"
+    url: "https://forum.hexrift.net"
+    category: "Application Forum"
 
   - name: "Track"
-    url: "track.hexarion.net"
-    category: "Internal"
-
-  - name: "Dashboard"
-    url: "dash.hexarion.net"
-    category: "Internal"
-
-  - name: "Share"
-    url: "share.hexarion.net"
-    category: "Internal"
+    url: "https://track.hexrift.net"
+    category: "Bug Tracker"
 
   - name: "Auth"
-    url: "api.hexarion.net"
-    category: "API"
+    url: "https://dash.hexrift.net"
+    category: "Hex License Dashboard"
+
+  - name: "Share"
+    url: "https://share.hexrift.net"
+    category: "File Share"
+
+  - name: "API"
+    url: "https://api.hexrift.net"
+    category: "Hex License API"
+
     
+# Footer
+# ------
 footer:
-  copyright: "Hex Status"
+  copyright: "Hex Status"        # Copyright text in footer
