@@ -1016,7 +1016,7 @@ class HexStatus {
         console.clear();
         console.log("\n");
         console.log(
-            chalk.red(
+            chalk.hex('#8b5cf6')(
                 figlet.textSync("Hex Status", {
                     font: "ANSI Shadow",
                     horizontalLayout: "full",
@@ -1024,13 +1024,13 @@ class HexStatus {
             )
         );
         console.log("\n");
-        console.log(chalk.red("━".repeat(70)));
+        console.log(chalk.hex('#8b5cf6')("━".repeat(75)));
         console.log(
             chalk.white.bold(
                 "      Welcome to Hex Status - The Ultimate Status Page Solution   "
             )
         );
-        console.log(chalk.red("━".repeat(70)), "\n");
+        console.log(chalk.hex('#8b5cf6')("━".repeat(75)), "\n");
         console.log("\n");
     }
     
