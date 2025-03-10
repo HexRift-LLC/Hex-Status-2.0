@@ -856,7 +856,7 @@ async function attemptReconnect() {
             // Set bot presence
             client.user.setPresence({
                 activities: [{
-                    name: `${config.siteName} Status`,
+                    name: `${config.siteName}`,
                     type: ActivityType.Watching
                 }],
                 status: 'online'

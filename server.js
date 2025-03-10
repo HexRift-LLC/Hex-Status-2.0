@@ -421,18 +421,18 @@ async function initializeFullApplication() {
       await checkVersion();
 
       // License validation step
-      console.log(chalk.cyan("[System]"), "Initializing license verification...");
-      const AuthManager = require("./src/api/checker");
-      const authManager = new AuthManager();
+     // console.log(chalk.cyan("[System]"), "Initializing license verification...");
+     // const AuthManager = require("./src/api/checker");
+     // const authManager = new AuthManager();
 
       // Validate license - must happen before anything else
-      const isLicenseValid = await authManager.validate();
+      //const isLicenseValid = await authManager.validate();
 
-      if (!isLicenseValid) {
-        process.exit(1);
-      }
+      //if (!isLicenseValid) {
+       // process.exit(1);
+     // }
 
-      console.log(chalk.green("[Auth]"), "License validated successfully");
+      //console.log(chalk.green("[Auth]"), "License validated successfully");
 
       const server = await initializeFullApplication();
 

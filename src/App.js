@@ -175,13 +175,13 @@ function App() {
     <div className="dashboard">
       {config && (
         <Helmet>
-          <title>{config.siteName || 'Status Dashboard'}</title>
+          <title>{config.siteName }</title>
         </Helmet>
       )}
       <header>
         <div className="header-content">
           <div className="logo-area">
-            <h1>{config.siteName || 'Status Dashboard'}</h1>
+            <h1>{config.siteName }</h1>
             <div className="subtitle">Real-time system monitoring</div>
           </div>
           <div className="global-status">
@@ -256,9 +256,10 @@ function App() {
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-copyright">
-            © {new Date().getFullYear()} {config.siteName || "Status Dashboard"}
-            . All rights reserved.
+            © 2023 - {new Date().getFullYear()} {config.footer}
+            . | V{config.version}
           </div>
+
           <div className="footer-links">
             {config.Links &&
               config.Links.slice(0, 3).map((link, index) => (

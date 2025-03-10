@@ -2,6 +2,7 @@
   "auth": {
     "key": "Your License Key"
   },
+  
   "siteName": "Hex Status",
   "port": 3000,
   "refreshInterval": 60000,
@@ -12,6 +13,10 @@
     "secondaryColor": "#6d41d1",
     "accentColor": "#9d71f7"
   },
+  
+  "footer": "Hex Status",
+  "version": "6.0.0",
+  
   "discord": {
     "enabled": true,
     "token": "Your Bot Token",
@@ -23,6 +28,7 @@
       "channelId": "Your Channel ID"
     }
   },
+ 
   "services": [
     {
       "id": "web-server",
@@ -32,6 +38,7 @@
       "expectedStatus": 200
     }
   ],
+ 
   "Links": [
     {
       "name": "API Documentation",
