@@ -1,4 +1,0 @@
-NONCE=%%__NONCE__%%
-PLEXSTORE=%%__PLEXSTORE__%%
-PRODUCT=%%__PRODUCT__%%
-USER=%%__USER__%%
