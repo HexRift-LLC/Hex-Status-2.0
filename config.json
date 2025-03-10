@@ -1,0 +1,49 @@
+{
+  "auth": {
+    "key": "Your License Key"
+  },
+  "siteName": "Hex Status",
+  "port": 3000,
+  "refreshInterval": 60000,
+  "theme": {
+    "primaryColor": "#8b5cf6",
+    "backgroundColor": "#0d0d0d",
+    "textColor": "#ffffff",
+    "secondaryColor": "#6d41d1",
+    "accentColor": "#9d71f7"
+  },
+  "discord": {
+    "enabled": true,
+    "token": "Your Bot Token",
+    "channelId": "Your Channel ID",
+    "updateInterval": 60000,
+    "thumbnail": "https://img.hexrift.net/HS.png",
+    "alerts": {
+      "enabled": true,
+      "channelId": "Your Channel ID"
+    }
+  },
+  "services": [
+    {
+      "id": "web-server",
+      "name": "Web Server",
+      "description": "Main website server",
+      "url": "https://www.google.com/",
+      "expectedStatus": 200
+    }
+  ],
+  "Links": [
+    {
+      "name": "API Documentation",
+      "url": "https://example.com/api-docs"
+    },
+    {
+      "name": "System Status History",
+      "url": "https://example.com/status-history"
+    },
+    {
+      "name": "Contact Support",
+      "url": "https://example.com/contact"
+    }
+  ]
+}
