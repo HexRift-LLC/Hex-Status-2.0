@@ -7,8 +7,9 @@
     "start:server": "node server.js",
     "start:client": "react-scripts start",
     "start:dev": "concurrently \"npm run start:server\" \"npm run start:client\"",
-    "build": "react-scripts build && cp config.json build/",
-    "deploy": "npm run build && mkdir -p dist && cp -r build/* dist/ && node server.js"
+    "build": "react-scripts build && copyfiles -f config.json build/",
+    "deploy": "npm run build && mkdir -p dist && cp -r build/* dist/ && node server.js",
+    "react-build": "react-scripts build"
   },
   "author": "HexRift",
   "dependencies": {
@@ -19,6 +20,7 @@
     "discord.js": "^14.6.0",
     "express": "^4.21.2",
     "figlet": "^1.8.0",
+    "javascript-obfuscator": "^4.1.1",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.4",
     "react": "^18.2.0",
