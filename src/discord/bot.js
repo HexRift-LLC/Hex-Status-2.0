@@ -727,7 +727,7 @@ async function initialize() {
                 // Set bot presence
                 client.user.setPresence({
                     activities: [{
-                      name: `${config.siteName} Status`,
+                      name: `HexRift Servers`,
                       type: ActivityType.Watching
                     }],
                     status: 'online'
@@ -856,7 +856,7 @@ async function attemptReconnect() {
             // Set bot presence
             client.user.setPresence({
                 activities: [{
-                    name: `${config.siteName}`,
+                    name: `HexRift Servers`,
                     type: ActivityType.Watching
                 }],
                 status: 'online'
